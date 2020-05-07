@@ -6,6 +6,51 @@ class Cadastro extends StatefulWidget {
 }
 
 class _CadastroState extends State<Cadastro> {
+
+  //Controllers
+  TextEditingController _controllerName = TextEditingController();
+  TextEditingController _controllerEmail = TextEditingController();
+  TextEditingController _controllerPassword = TextEditingController();
+  String _msgError = "";
+
+  _validarCampos(){
+    //Recupera dados dos campos
+    String name = _controllerName.text;
+    String email = _controllerEmail.text;
+    String pass = _controllerPassword.text;
+
+    if(name.isNotEmpty){
+
+      if(email.isNotEmpty && email.contains("@")){
+
+        if(pass.isNotEmpty){
+          setState(() {
+            _msgError = "";
+          });
+          _cadastrarUsuario();
+        } else{
+          setState(() {
+            _msgError = "Preencha a senha!";
+          });
+        }
+
+      } else{
+        setState(() {
+          _msgError = "Preencha o E-mail utilizando @";
+        });
+      }
+
+    } else{
+      setState(() {
+        _msgError = "Preencha o nome!";
+      });
+    }
+  }
+
+  _cadastrarUsuario(){
+
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -28,6 +73,7 @@ class _CadastroState extends State<Cadastro> {
                 Padding(
                   padding: EdgeInsets.only(bottom: 8),
                   child: TextField(
+                    controller: _controllerName,
                     autofocus: true,
                     keyboardType: TextInputType.text,
                     style: TextStyle(fontSize: 20),
@@ -43,6 +89,7 @@ class _CadastroState extends State<Cadastro> {
                 Padding(
                   padding: EdgeInsets.only(bottom: 8),
                   child: TextField(
+                    controller: _controllerEmail,
                     keyboardType: TextInputType.emailAddress,
                     style: TextStyle(fontSize: 20),
                     decoration: InputDecoration(
@@ -55,6 +102,8 @@ class _CadastroState extends State<Cadastro> {
                   ),
                 ),
                 TextField(
+                  controller: _controllerPassword,
+                  obscureText: true,
                   keyboardType: TextInputType.text,
                   style: TextStyle(fontSize: 20),
                   decoration: InputDecoration(
@@ -77,8 +126,20 @@ class _CadastroState extends State<Cadastro> {
                       shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(32)
                       ),
-                      onPressed: () {}),
+                      onPressed: () {
+                        _validarCampos();
+                      }
+                  ),
                 ),
+                Center(
+                  child: Text(
+                    _msgError,
+                    style: TextStyle(
+                        color: Colors.red,
+                        fontSize: 20
+                    ),
+                  ),
+                )
               ],
             ),
           ),
