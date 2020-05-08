@@ -52,7 +52,7 @@ class _LoginState extends State<Login> {
         email: user.email,
         password: user.pass
     ).then((farebaseUser){
-      Navigator.push(
+      Navigator.pushReplacement(
           context,
           MaterialPageRoute(
               builder: (context) => Home()
@@ -71,7 +71,7 @@ class _LoginState extends State<Login> {
     FirebaseUser loggedUser = await auth.currentUser();
 
     if(loggedUser != null){
-      Navigator.push(
+      Navigator.pushReplacement(
           context,
           MaterialPageRoute(
               builder: (context) => Home()

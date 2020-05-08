@@ -5,6 +5,14 @@ class Usuario {
 
   Usuario();
 
+  Map<String, dynamic> toMap(){
+    Map<String, dynamic> map = {
+      "name": this.name,
+      "email": this.email
+    };
+    return map;
+  }
+
   String get pass => _pass;
 
   set pass(String value) {
