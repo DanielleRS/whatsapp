@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'Cadastro.dart';
+import 'Configurations.dart';
 import 'Home.dart';
 import 'Login.dart';
 
@@ -22,6 +23,10 @@ class RouteGenerator {
       case "/home":
         return MaterialPageRoute(
             builder: (_) => Home()
+        );
+      case "/configurations":
+        return MaterialPageRoute(
+            builder: (_) => Configurations()
         );
       default:
         _routeError();
