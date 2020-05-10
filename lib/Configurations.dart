@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:firebase_storage/firebase_storage.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'dart:io';
 
 class Configurations extends StatefulWidget {
@@ -11,6 +13,9 @@ class _ConfigurationsState extends State<Configurations> {
 
   TextEditingController _controllerName = TextEditingController();
   File _image;
+  String _idLoggedUser;
+  bool _climbingImage = false;
+  String _urlImageRecover;
 
   Future _recoverImage(String sourceImage) async {
     File selectedImage ;
@@ -25,7 +30,60 @@ class _ConfigurationsState extends State<Configurations> {
 
     setState(() {
       _image = selectedImage;
+      if(_image != null){
+        _climbingImage = true;
+        _uploadImage();
+      }
     });
+  }
+
+  Future _uploadImage() async {
+    FirebaseStorage storage = FirebaseStorage.instance;
+    StorageReference rootFolder = storage.ref();
+    StorageReference archive = rootFolder
+      .child("profiles")
+      .child(_idLoggedUser + ".jpg");
+
+    //Upload da imagem
+    StorageUploadTask task = archive.putFile(_image);
+
+    //Controlar progresso do upload
+    task.events.listen((StorageTaskEvent storageEvent){
+      if(storageEvent.type == StorageTaskEventType.progress){
+        setState(() {
+          _climbingImage = true;
+        });
+      } else if(storageEvent.type == StorageTaskEventType.success){
+        setState(() {
+          _climbingImage = false;
+        });
+      }
+    });
+
+    //Recuperar url da imagem
+    task.onComplete.then((StorageTaskSnapshot snapshot){
+      _recoverUrlImage(snapshot);
+    });
+  }
+
+  Future _recoverUrlImage(StorageTaskSnapshot snapshot) async {
+    String url = await snapshot.ref.getDownloadURL();
+    setState(() {
+      _urlImageRecover = url;
+    });
+  }
+
+  _recoverUserData() async {
+    FirebaseAuth auth = FirebaseAuth.instance;
+    FirebaseUser loggedUser = await auth.currentUser();
+
+    _idLoggedUser = loggedUser.uid;
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _recoverUserData();
   }
 
   @override
@@ -38,10 +96,16 @@ class _ConfigurationsState extends State<Configurations> {
           child: SingleChildScrollView(
             child: Column(
               children: <Widget>[
+                _climbingImage
+                  ? CircularProgressIndicator()
+                  : Container(),
                 CircleAvatar(
                   radius: 100,
                   backgroundColor: Colors.grey,
-                  backgroundImage: NetworkImage("https://firebasestorage.googleapis.com/v0/b/whatsapp-97983.appspot.com/o/profiles%2Fperfil5.jpg?alt=media&token=a08096ce-d56c-4fbe-8509-cca4c7922ffb"),
+                  backgroundImage:
+                  _urlImageRecover != null
+                    ? NetworkImage(_urlImageRecover)
+                    : null
                 ),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
