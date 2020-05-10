@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'dart:io';
 
 class Configurations extends StatefulWidget {
@@ -68,16 +69,53 @@ class _ConfigurationsState extends State<Configurations> {
 
   Future _recoverUrlImage(StorageTaskSnapshot snapshot) async {
     String url = await snapshot.ref.getDownloadURL();
+    _updateFirestoreImageUrl(url);
     setState(() {
       _urlImageRecover = url;
     });
   }
 
+  _updateFirestoreName(){
+    String name = _controllerName.text;
+    Firestore db = Firestore.instance;
+
+    Map<String, dynamic> dataUpdate = {
+      "name": name
+    };
+
+    db.collection("usuarios")
+        .document(_idLoggedUser)
+        .updateData(dataUpdate);
+  }
+
+  _updateFirestoreImageUrl(String url){
+    Firestore db = Firestore.instance;
+
+    Map<String, dynamic> dataUpdate = {
+      "urlImage": url
+    };
+
+    db.collection("usuarios")
+      .document(_idLoggedUser)
+      .updateData(dataUpdate);
+  }
+
   _recoverUserData() async {
     FirebaseAuth auth = FirebaseAuth.instance;
     FirebaseUser loggedUser = await auth.currentUser();
-
     _idLoggedUser = loggedUser.uid;
+
+    Firestore db = Firestore.instance;
+    DocumentSnapshot snapshot = await db.collection("usuarios")
+      .document(_idLoggedUser)
+      .get();
+
+    Map<String, dynamic> data = snapshot.data;
+    _controllerName.text = data["name"];
+
+    if(data["urlImage"] != null){
+      _urlImageRecover = data["urlImage"];
+    }
   }
 
   @override
@@ -96,9 +134,12 @@ class _ConfigurationsState extends State<Configurations> {
           child: SingleChildScrollView(
             child: Column(
               children: <Widget>[
-                _climbingImage
-                  ? CircularProgressIndicator()
-                  : Container(),
+                Container(
+                  padding: EdgeInsets.all(16),
+                  child: _climbingImage
+                      ? CircularProgressIndicator()
+                      : Container(),
+                ),
                 CircleAvatar(
                   radius: 100,
                   backgroundColor: Colors.grey,
@@ -131,6 +172,9 @@ class _ConfigurationsState extends State<Configurations> {
                     autofocus: true,
                     keyboardType: TextInputType.text,
                     style: TextStyle(fontSize: 20),
+                    /*onChanged: (text){
+                      _updateFirestoreName(text);
+                    },*/
                     decoration: InputDecoration(
                         contentPadding: EdgeInsets.fromLTRB(32, 16, 32, 16),
                         hintText: "Nome",
@@ -153,7 +197,7 @@ class _ConfigurationsState extends State<Configurations> {
                           borderRadius: BorderRadius.circular(32)
                       ),
                       onPressed: () {
-
+                        _updateFirestoreName();
                       }
                   ),
                 ),
