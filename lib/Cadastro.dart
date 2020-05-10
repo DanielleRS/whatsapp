@@ -70,12 +70,8 @@ class _CadastroState extends State<Cadastro> {
       .document(firebaseUser.uid)
       .setData(user.toMap());
 
-      Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(
-              builder: (context) => Home()
-          )
-      );
+      Navigator.pushNamedAndRemoveUntil(context, "/home", (_) => false);
+
     }).catchError((error){
       print("erro app: " + error.toString());
       setState(() {

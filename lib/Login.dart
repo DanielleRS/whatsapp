@@ -52,12 +52,7 @@ class _LoginState extends State<Login> {
         email: user.email,
         password: user.pass
     ).then((farebaseUser){
-      Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(
-              builder: (context) => Home()
-          )
-      );
+      Navigator.pushReplacementNamed(context, "/home");
     }).catchError((error){
       setState(() {
         _msgError = "Erro ao autenticar usuário, verifique e-mail e senha e tente novamente";
@@ -71,12 +66,7 @@ class _LoginState extends State<Login> {
     FirebaseUser loggedUser = await auth.currentUser();
 
     if(loggedUser != null){
-      Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(
-              builder: (context) => Home()
-          )
-      );
+      Navigator.pushReplacementNamed(context, "/home");
     }
   }
 
