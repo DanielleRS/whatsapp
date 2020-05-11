@@ -24,6 +24,7 @@ class _ContactsTabState extends State<ContactsTab> {
       if(data["email"] == _emailLoggedUser) continue;
 
       Usuario user = Usuario();
+      user.idUser = item.documentID;
       user.email = data["email"];
       user.name = data["name"];
       user.urlImage = data["urlImage"];

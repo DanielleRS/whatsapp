@@ -1,4 +1,5 @@
 class Usuario {
+  String _idUser;
   String _name;
   String _email;
   String _pass;
@@ -12,6 +13,12 @@ class Usuario {
       "email": this.email
     };
     return map;
+  }
+
+  String get idUser => _idUser;
+
+  set idUser(String value) {
+    _idUser = value;
   }
 
   String get urlImage => _urlImage;
