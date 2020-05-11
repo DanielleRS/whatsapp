@@ -13,6 +13,14 @@ class Messages extends StatefulWidget {
 
 class _MessagesState extends State<Messages> {
 
+  List<String> listMessages = [
+    "Olá meu amigo, tudo bem?",
+    "Tudo ótimo, e contigo?",
+    "Estou ótimo. Queria ver uma coisa contigo, você vai na corrida amanhã?",
+    "Não sei ainda",
+    "Pq se voce fosse, queria ver se posso ir com voce"
+  ];
+
   TextEditingController _controllerMessage = TextEditingController();
 
   _sendMessage(){
@@ -63,6 +71,43 @@ class _MessagesState extends State<Messages> {
       ),
     );
 
+    var listView = Expanded(
+      child: ListView.builder(
+        itemCount: listMessages.length,
+          itemBuilder: (context, index){
+
+            double widthContainer = MediaQuery.of(context).size.width * 0.8;
+            Alignment alignment = Alignment.centerRight;
+            Color color = Color(0xffd2ffa5);
+            if(index % 2 == 0){
+              alignment = Alignment.centerLeft;
+              color = Colors.white;
+            }
+
+            return Align(
+              alignment: alignment,
+              child: Padding(
+                padding: EdgeInsets.all(6),
+                child: Container(
+                  width: widthContainer,
+                  padding: EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: color,
+                    borderRadius: BorderRadius.all(Radius.circular(8))
+                  ),
+                  child: Text(
+                      listMessages[index],
+                    style: TextStyle(
+                      fontSize: 18
+                    ),
+                  ),
+                ),
+              ),
+            );
+          }
+      ),
+    );
+
     return Scaffold(
       appBar: AppBar(title: Text(widget.contact.name)),
       body: Container(
@@ -78,7 +123,7 @@ class _MessagesState extends State<Messages> {
               padding: EdgeInsets.all(8),
               child: Column(
                 children: <Widget>[
-                  Text("list view"),
+                  listView,
                   messageBox,
                 ],
               ),
