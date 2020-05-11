@@ -4,9 +4,12 @@ import 'Cadastro.dart';
 import 'Configurations.dart';
 import 'Home.dart';
 import 'Login.dart';
+import 'Messages.dart';
 
 class RouteGenerator {
   static Route<dynamic> generateRoute(RouteSettings settings){
+    final args = settings.arguments;
+
     switch(settings.name){
       case "/":
         return MaterialPageRoute(
@@ -27,6 +30,10 @@ class RouteGenerator {
       case "/configurations":
         return MaterialPageRoute(
             builder: (_) => Configurations()
+        );
+      case "/messages":
+        return MaterialPageRoute(
+            builder: (_) => Messages(args)
         );
       default:
         _routeError();

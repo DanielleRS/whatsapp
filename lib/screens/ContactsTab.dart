@@ -71,6 +71,13 @@ class _ContactsTabState extends State<ContactsTab> {
                   List<Usuario> listItems = snapshot.data;
                   Usuario user = listItems[index];
                   return ListTile(
+                    onTap: (){
+                      Navigator.pushNamed(
+                          context,
+                          "/messages",
+                        arguments: user
+                      );
+                    },
                     contentPadding: EdgeInsets.fromLTRB(16, 8, 16, 8),
                     leading: CircleAvatar(
                         maxRadius: 30,
