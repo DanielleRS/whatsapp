@@ -5,7 +5,6 @@ import 'model/Message.dart';
 import 'model/Usuario.dart';
 
 class Messages extends StatefulWidget {
-
   Usuario contact;
   Messages(this.contact);
 
@@ -14,9 +13,9 @@ class Messages extends StatefulWidget {
 }
 
 class _MessagesState extends State<Messages> {
-
   String _idLoggedUser;
   String _idRecipientUser;
+  Firestore db = Firestore.instance;
 
   List<String> listMessages = [
     "Olá meu amigo, tudo bem?",
@@ -28,9 +27,9 @@ class _MessagesState extends State<Messages> {
 
   TextEditingController _controllerMessage = TextEditingController();
 
-  _sendMessage(){
+  _sendMessage() {
     String textMessage = _controllerMessage.text;
-    if(textMessage.isNotEmpty){
+    if (textMessage.isNotEmpty) {
       Message message = Message();
       message.idUser = _idLoggedUser;
       message.message = textMessage;
@@ -42,18 +41,16 @@ class _MessagesState extends State<Messages> {
   }
 
   _saveMessage(String idSender, String idRecipient, Message msg) async {
-    Firestore db = Firestore.instance;
-    await db.collection("mensagens")
-      .document(idSender)
-      .collection(idRecipient)
-      .add(msg.toMap());
+    await db
+        .collection("mensagens")
+        .document(idSender)
+        .collection(idRecipient)
+        .add(msg.toMap());
 
     _controllerMessage.clear();
   }
 
-  _sendPhoto(){
-
-  }
+  _sendPhoto() {}
 
   _recoverUserData() async {
     FirebaseAuth auth = FirebaseAuth.instance;
@@ -76,7 +73,7 @@ class _MessagesState extends State<Messages> {
         children: <Widget>[
           Expanded(
             child: Padding(
-                padding: EdgeInsets.only(right: 8),
+              padding: EdgeInsets.only(right: 8),
               child: TextField(
                 controller: _controllerMessage,
                 autofocus: true,
@@ -88,19 +85,18 @@ class _MessagesState extends State<Messages> {
                     filled: true,
                     fillColor: Colors.white,
                     border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(32)
-                    ),
-                  prefixIcon: IconButton(
-                      icon: Icon(Icons.camera_alt),
-                      onPressed: _sendPhoto
-                  )
-                ),
+                        borderRadius: BorderRadius.circular(32)),
+                    prefixIcon: IconButton(
+                        icon: Icon(Icons.camera_alt), onPressed: _sendPhoto)),
               ),
             ),
           ),
           FloatingActionButton(
             backgroundColor: Color(0xff075E54),
-            child: Icon(Icons.send, color: Colors.white,),
+            child: Icon(
+              Icons.send,
+              color: Colors.white,
+            ),
             mini: true,
             onPressed: _sendMessage,
           )
@@ -108,15 +104,83 @@ class _MessagesState extends State<Messages> {
       ),
     );
 
+    var stream = StreamBuilder(
+      stream: db
+          .collection("mensagens")
+          .document(_idLoggedUser)
+          .collection(_idRecipientUser)
+          .snapshots(),
+      builder: (context, snapshot) {
+        switch (snapshot.connectionState) {
+          case ConnectionState.none:
+          case ConnectionState.waiting:
+            return Center(
+              child: Column(
+                children: <Widget>[
+                  Text("Carregando mensagens"),
+                  CircularProgressIndicator()
+                ],
+              ),
+            );
+            break;
+          case ConnectionState.active:
+          case ConnectionState.done:
+            QuerySnapshot querySnapshot = snapshot.data;
+            if (snapshot.hasError) {
+              return Expanded(
+                child: Text("Erro ao carregar os dados."),
+              );
+            } else {
+              return Expanded(
+                child: ListView.builder(
+                    itemCount: querySnapshot.documents.length,
+                    itemBuilder: (context, index) {
+                      List<DocumentSnapshot> messages = querySnapshot.documents.toList();
+                      DocumentSnapshot item = messages[index];
+
+                      double widthContainer =
+                          MediaQuery.of(context).size.width * 0.8;
+                      Alignment alignment = Alignment.centerRight;
+                      Color color = Color(0xffd2ffa5);
+                      if (_idLoggedUser != item["idUser"]) {
+                        alignment = Alignment.centerLeft;
+                        color = Colors.white;
+                      }
+
+                      return Align(
+                        alignment: alignment,
+                        child: Padding(
+                          padding: EdgeInsets.all(6),
+                          child: Container(
+                            width: widthContainer,
+                            padding: EdgeInsets.all(16),
+                            decoration: BoxDecoration(
+                                color: color,
+                                borderRadius:
+                                    BorderRadius.all(Radius.circular(8))),
+                            child: Text(
+                              item["message"],
+                              style: TextStyle(fontSize: 18),
+                            ),
+                          ),
+                        ),
+                      );
+                    }),
+              );
+            }
+            break;
+        }
+      },
+    );
+
     var listView = Expanded(
       child: ListView.builder(
-        itemCount: listMessages.length,
-          itemBuilder: (context, index){
-
+          itemCount: listMessages.length,
+          itemBuilder: (context, index) {
             double widthContainer = MediaQuery.of(context).size.width * 0.8;
             Alignment alignment = Alignment.centerRight;
             Color color = Color(0xffd2ffa5);
-            if(index % 2 == 0){
+            if (index % 2 == 0) {
               alignment = Alignment.centerLeft;
               color = Colors.white;
             }
@@ -129,58 +193,50 @@ class _MessagesState extends State<Messages> {
                   width: widthContainer,
                   padding: EdgeInsets.all(16),
                   decoration: BoxDecoration(
-                    color: color,
-                    borderRadius: BorderRadius.all(Radius.circular(8))
-                  ),
+                      color: color,
+                      borderRadius: BorderRadius.all(Radius.circular(8))),
                   child: Text(
-                      listMessages[index],
-                    style: TextStyle(
-                      fontSize: 18
-                    ),
+                    listMessages[index],
+                    style: TextStyle(fontSize: 18),
                   ),
                 ),
               ),
             );
-          }
-      ),
+          }),
     );
 
     return Scaffold(
       appBar: AppBar(
-          title: Row(
-            children: <Widget>[
-              CircleAvatar(
+        title: Row(
+          children: <Widget>[
+            CircleAvatar(
                 maxRadius: 20,
                 backgroundColor: Colors.grey,
                 backgroundImage: widget.contact.urlImage != null
-                  ? NetworkImage(widget.contact.urlImage)
-                  : null),
-              Padding(
-                padding: EdgeInsets.only(left: 8),
-                child: Text(widget.contact.name),
-              )
-            ],
-          ),
+                    ? NetworkImage(widget.contact.urlImage)
+                    : null),
+            Padding(
+              padding: EdgeInsets.only(left: 8),
+              child: Text(widget.contact.name),
+            )
+          ],
+        ),
       ),
       body: Container(
         width: MediaQuery.of(context).size.width,
         decoration: BoxDecoration(
-          image: DecorationImage(
-              image: AssetImage("images/bg.png"),
-            fit: BoxFit.cover
-          )
-        ),
+            image: DecorationImage(
+                image: AssetImage("images/bg.png"), fit: BoxFit.cover)),
         child: SafeArea(
             child: Container(
-              padding: EdgeInsets.all(8),
-              child: Column(
-                children: <Widget>[
-                  listView,
-                  messageBox,
-                ],
-              ),
-            )
-        ),
+          padding: EdgeInsets.all(8),
+          child: Column(
+            children: <Widget>[
+              stream,
+              messageBox,
+            ],
+          ),
+        )),
       ),
     );
   }
