@@ -37,6 +37,7 @@ class _MessagesState extends State<Messages> {
       message.type = "texto";
 
       _saveMessage(_idLoggedUser, _idRecipientUser, message);
+      _saveMessage(_idRecipientUser, _idLoggedUser, message);
     }
   }
 
@@ -50,7 +51,9 @@ class _MessagesState extends State<Messages> {
     _controllerMessage.clear();
   }
 
-  _sendPhoto() {}
+  _sendPhoto() {
+
+  }
 
   _recoverUserData() async {
     FirebaseAuth auth = FirebaseAuth.instance;
