@@ -8,40 +8,26 @@ class ConversationsTab extends StatefulWidget {
 
 class _ConversationsTabState extends State<ConversationsTab> {
 
-  List<Conversation> listConversations = [
-    Conversation(
-      "Ana Clara",
-      "Olá, tudo bem?",
-      "https://firebasestorage.googleapis.com/v0/b/whatsapp-97983.appspot.com/o/profiles%2Fperfil1.jpg?alt=media&token=6a3e62ac-290d-4d7e-82d9-e868f245aa9d"
-    ),
-    Conversation(
-        "Pedro Silva",
-        "Me manda o nome daquela série que falamos!",
-        "https://firebasestorage.googleapis.com/v0/b/whatsapp-97983.appspot.com/o/profiles%2Fperfil2.jpg?alt=media&token=e6d64652-65d4-412c-bcfa-e965b85df083"
-    ),
-    Conversation(
-        "Marcela Almeida",
-        "Olá, tudo bem?",
-        "https://firebasestorage.googleapis.com/v0/b/whatsapp-97983.appspot.com/o/profiles%2Fperfil3.jpg?alt=media&token=56b9fb35-519f-4840-b3f9-b2b7f4021f03"
-    ),
-    Conversation(
-        "José Renato",
-        "Olá, tudo bem?",
-        "https://firebasestorage.googleapis.com/v0/b/whatsapp-97983.appspot.com/o/profiles%2Fperfil4.jpg?alt=media&token=e8600f16-2372-4bf5-9ba4-a776467a3c27"
-    ),
-    Conversation(
-        "Jamilton Damasceno",
-        "Olá, tudo bem?",
-        "https://firebasestorage.googleapis.com/v0/b/whatsapp-97983.appspot.com/o/profiles%2Fperfil5.jpg?alt=media&token=a08096ce-d56c-4fbe-8509-cca4c7922ffb"
-    ),
-  ];
+  List<Conversation> _listConversations = List();
+
+  @override
+  void initState() {
+    super.initState();
+
+    Conversation conversation = Conversation();
+    conversation.name = "Ana Clara";
+    conversation.message = "Olá, tudo bem?";
+    conversation.photo = "https://firebasestorage.googleapis.com/v0/b/whatsapp-97983.appspot.com/o/profiles%2Fperfil1.jpg?alt=media&token=6a3e62ac-290d-4d7e-82d9-e868f245aa9d";
+
+    _listConversations.add(conversation);
+  }
 
   @override
   Widget build(BuildContext context) {
     return ListView.builder(
-      itemCount: listConversations.length,
+      itemCount: _listConversations.length,
       itemBuilder: (context, index){
-        Conversation conversation = listConversations[index];
+        Conversation conversation = _listConversations[index];
         return ListTile(
           contentPadding: EdgeInsets.fromLTRB(16, 8, 16, 8),
           leading: CircleAvatar(

@@ -6,6 +6,7 @@ import 'package:image_picker/image_picker.dart';
 import 'dart:io';
 import 'model/Message.dart';
 import 'model/Usuario.dart';
+import 'model/Conversation.dart';
 
 class Messages extends StatefulWidget {
   Usuario contact;
@@ -35,7 +36,30 @@ class _MessagesState extends State<Messages> {
 
       _saveMessage(_idLoggedUser, _idRecipientUser, message);
       _saveMessage(_idRecipientUser, _idLoggedUser, message);
+      _saveConversation(message);
     }
+  }
+
+  _saveConversation(Message msg){
+    //Remetente
+    Conversation cSend = Conversation();
+    cSend.idSender = _idLoggedUser;
+    cSend.idRecipient = _idRecipientUser;
+    cSend.message = msg.message;
+    cSend.name = widget.contact.name;
+    cSend.photo = widget.contact.urlImage;
+    cSend.typeMessage = msg.type;
+    cSend.save();
+
+    //Destinatário
+    Conversation cRecipient = Conversation();
+    cRecipient.idSender = _idRecipientUser;
+    cRecipient.idRecipient = _idLoggedUser;
+    cRecipient.message = msg.message;
+    cRecipient.name = widget.contact.name;
+    cRecipient.photo = widget.contact.urlImage;
+    cRecipient.typeMessage = msg.type;
+    cRecipient.save();
   }
 
   _saveMessage(String idSender, String idRecipient, Message msg) async {
