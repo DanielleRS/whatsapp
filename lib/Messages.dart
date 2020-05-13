@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_storage/firebase_storage.dart';
+import 'package:image_picker/image_picker.dart';
+import 'dart:io';
 import 'model/Message.dart';
 import 'model/Usuario.dart';
 
@@ -13,17 +16,11 @@ class Messages extends StatefulWidget {
 }
 
 class _MessagesState extends State<Messages> {
+  File _image;
+  bool _climbingImage = false;
   String _idLoggedUser;
   String _idRecipientUser;
   Firestore db = Firestore.instance;
-
-  List<String> listMessages = [
-    "Olá meu amigo, tudo bem?",
-    "Tudo ótimo, e contigo?",
-    "Estou ótimo. Queria ver uma coisa contigo, você vai na corrida amanhã?",
-    "Não sei ainda",
-    "Pq se voce fosse, queria ver se posso ir com voce"
-  ];
 
   TextEditingController _controllerMessage = TextEditingController();
 
@@ -51,8 +48,52 @@ class _MessagesState extends State<Messages> {
     _controllerMessage.clear();
   }
 
-  _sendPhoto() {
+  _sendPhoto() async {
+    File selectedImage ;
+    selectedImage = await ImagePicker.pickImage(source: ImageSource.gallery);
 
+    _climbingImage = true;
+    String nameImage = DateTime.now().millisecondsSinceEpoch.toString();
+    FirebaseStorage storage = FirebaseStorage.instance;
+    StorageReference rootFolder = storage.ref();
+    StorageReference archive = rootFolder
+        .child("mensagens")
+        .child(_idLoggedUser)
+        .child(nameImage + ".jpg");
+
+    //Upload da imagem
+    StorageUploadTask task = archive.putFile(selectedImage);
+
+    //Controlar progresso do upload
+    task.events.listen((StorageTaskEvent storageEvent){
+      if(storageEvent.type == StorageTaskEventType.progress){
+        setState(() {
+          _climbingImage = true;
+        });
+      } else if(storageEvent.type == StorageTaskEventType.success){
+        setState(() {
+          _climbingImage = false;
+        });
+      }
+    });
+
+    //Recuperar url da imagem
+    task.onComplete.then((StorageTaskSnapshot snapshot){
+      _recoverUrlImage(snapshot);
+    });
+  }
+
+  Future _recoverUrlImage(StorageTaskSnapshot snapshot) async {
+    String url = await snapshot.ref.getDownloadURL();
+
+    Message message = Message();
+    message.idUser = _idLoggedUser;
+    message.message = "";
+    message.urlImage = url;
+    message.type = "imagem";
+
+    _saveMessage(_idLoggedUser, _idRecipientUser, message);
+    _saveMessage(_idRecipientUser, _idLoggedUser, message);
   }
 
   _recoverUserData() async {
@@ -89,8 +130,10 @@ class _MessagesState extends State<Messages> {
                     fillColor: Colors.white,
                     border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(32)),
-                    prefixIcon: IconButton(
-                        icon: Icon(Icons.camera_alt), onPressed: _sendPhoto)),
+                    prefixIcon:
+                        _climbingImage
+                          ? CircularProgressIndicator()
+                          : IconButton(icon: Icon(Icons.camera_alt), onPressed: _sendPhoto)),
               ),
             ),
           ),
@@ -161,10 +204,10 @@ class _MessagesState extends State<Messages> {
                                 color: color,
                                 borderRadius:
                                     BorderRadius.all(Radius.circular(8))),
-                            child: Text(
-                              item["message"],
-                              style: TextStyle(fontSize: 18),
-                            ),
+                            child:
+                            item["type"] == "texto"
+                              ? Text(item["message"],style: TextStyle(fontSize: 18),)
+                              : Image.network(item["urlImage"]),
                           ),
                         ),
                       );
@@ -174,38 +217,6 @@ class _MessagesState extends State<Messages> {
             break;
         }
       },
-    );
-
-    var listView = Expanded(
-      child: ListView.builder(
-          itemCount: listMessages.length,
-          itemBuilder: (context, index) {
-            double widthContainer = MediaQuery.of(context).size.width * 0.8;
-            Alignment alignment = Alignment.centerRight;
-            Color color = Color(0xffd2ffa5);
-            if (index % 2 == 0) {
-              alignment = Alignment.centerLeft;
-              color = Colors.white;
-            }
-
-            return Align(
-              alignment: alignment,
-              child: Padding(
-                padding: EdgeInsets.all(6),
-                child: Container(
-                  width: widthContainer,
-                  padding: EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                      color: color,
-                      borderRadius: BorderRadius.all(Radius.circular(8))),
-                  child: Text(
-                    listMessages[index],
-                    style: TextStyle(fontSize: 18),
-                  ),
-                ),
-              ),
-            );
-          }),
     );
 
     return Scaffold(
@@ -227,6 +238,7 @@ class _MessagesState extends State<Messages> {
       ),
       body: Container(
         width: MediaQuery.of(context).size.width,
+
         decoration: BoxDecoration(
             image: DecorationImage(
                 image: AssetImage("images/bg.png"), fit: BoxFit.cover)),
