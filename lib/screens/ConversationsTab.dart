@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:whatsapp/model/Conversation.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:whatsapp/model/Usuario.dart';
 
 class ConversationsTab extends StatefulWidget {
   @override
@@ -49,6 +50,12 @@ class _ConversationsTabState extends State<ConversationsTab> {
   }
 
   @override
+  void dispose() {
+    super.dispose();
+    _controller.close();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return StreamBuilder<QuerySnapshot>(
       stream: _controller.stream,
@@ -91,8 +98,21 @@ class _ConversationsTabState extends State<ConversationsTab> {
                     String type = item["typeMessage"];
                     String message = item["message"];
                     String name = item["name"];
+                    String idRecipient = item["idRecipient"];
+
+                    Usuario user = Usuario();
+                    user.name = name;
+                    user.urlImage = urlImage;
+                    user.idUser = idRecipient;
 
                     return ListTile(
+                      onTap: (){
+                        Navigator.pushNamed(
+                            context,
+                            "/messages",
+                            arguments: user
+                        );
+                      },
                       contentPadding: EdgeInsets.fromLTRB(16, 8, 16, 8),
                       leading: CircleAvatar(
                         maxRadius: 30,

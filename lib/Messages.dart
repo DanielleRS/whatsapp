@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -40,7 +41,7 @@ class _MessagesState extends State<Messages> {
     }
   }
 
-  _saveConversation(Message msg){
+  _saveConversation(Message msg) {
     //Remetente
     Conversation cSend = Conversation();
     cSend.idSender = _idLoggedUser;
@@ -73,7 +74,7 @@ class _MessagesState extends State<Messages> {
   }
 
   _sendPhoto() async {
-    File selectedImage ;
+    File selectedImage;
     selectedImage = await ImagePicker.pickImage(source: ImageSource.gallery);
 
     _climbingImage = true;
@@ -89,12 +90,12 @@ class _MessagesState extends State<Messages> {
     StorageUploadTask task = archive.putFile(selectedImage);
 
     //Controlar progresso do upload
-    task.events.listen((StorageTaskEvent storageEvent){
-      if(storageEvent.type == StorageTaskEventType.progress){
+    task.events.listen((StorageTaskEvent storageEvent) {
+      if (storageEvent.type == StorageTaskEventType.progress) {
         setState(() {
           _climbingImage = true;
         });
-      } else if(storageEvent.type == StorageTaskEventType.success){
+      } else if (storageEvent.type == StorageTaskEventType.success) {
         setState(() {
           _climbingImage = false;
         });
@@ -102,7 +103,7 @@ class _MessagesState extends State<Messages> {
     });
 
     //Recuperar url da imagem
-    task.onComplete.then((StorageTaskSnapshot snapshot){
+    task.onComplete.then((StorageTaskSnapshot snapshot) {
       _recoverUrlImage(snapshot);
     });
   }
@@ -154,22 +155,28 @@ class _MessagesState extends State<Messages> {
                     fillColor: Colors.white,
                     border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(32)),
-                    prefixIcon:
-                        _climbingImage
-                          ? CircularProgressIndicator()
-                          : IconButton(icon: Icon(Icons.camera_alt), onPressed: _sendPhoto)),
+                    prefixIcon: _climbingImage
+                        ? CircularProgressIndicator()
+                        : IconButton(
+                            icon: Icon(Icons.camera_alt),
+                            onPressed: _sendPhoto)),
               ),
             ),
           ),
-          FloatingActionButton(
-            backgroundColor: Color(0xff075E54),
-            child: Icon(
-              Icons.send,
-              color: Colors.white,
-            ),
-            mini: true,
-            onPressed: _sendMessage,
-          )
+          Platform.isIOS
+              ? CupertinoButton(
+                  child: Text("Enviar"),
+                  onPressed: _sendMessage,
+                )
+              : FloatingActionButton(
+                  backgroundColor: Color(0xff075E54),
+                  child: Icon(
+                    Icons.send,
+                    color: Colors.white,
+                  ),
+                  mini: true,
+                  onPressed: _sendMessage,
+                )
         ],
       ),
     );
@@ -203,7 +210,8 @@ class _MessagesState extends State<Messages> {
                 child: ListView.builder(
                     itemCount: querySnapshot.documents.length,
                     itemBuilder: (context, index) {
-                      List<DocumentSnapshot> messages = querySnapshot.documents.toList();
+                      List<DocumentSnapshot> messages =
+                          querySnapshot.documents.toList();
                       DocumentSnapshot item = messages[index];
 
                       double widthContainer =
@@ -226,10 +234,12 @@ class _MessagesState extends State<Messages> {
                                 color: color,
                                 borderRadius:
                                     BorderRadius.all(Radius.circular(8))),
-                            child:
-                            item["type"] == "texto"
-                              ? Text(item["message"],style: TextStyle(fontSize: 18),)
-                              : Image.network(item["urlImage"]),
+                            child: item["type"] == "texto"
+                                ? Text(
+                                    item["message"],
+                                    style: TextStyle(fontSize: 18),
+                                  )
+                                : Image.network(item["urlImage"]),
                           ),
                         ),
                       );
@@ -260,7 +270,6 @@ class _MessagesState extends State<Messages> {
       ),
       body: Container(
         width: MediaQuery.of(context).size.width,
-
         decoration: BoxDecoration(
             image: DecorationImage(
                 image: AssetImage("images/bg.png"), fit: BoxFit.cover)),
