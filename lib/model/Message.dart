@@ -3,6 +3,7 @@ class Message {
   String _message;
   String _urlImage;
   String _type;
+  String _date;
 
   Message();
 
@@ -12,8 +13,15 @@ class Message {
       "message": this.message,
       "urlImage": this.urlImage,
       "type": this.type,
+      "date": this.date,
     };
     return map;
+  }
+
+  String get date => _date;
+
+  set date(String value) {
+    _date = value;
   }
 
   String get type => _type;

@@ -40,6 +40,7 @@ class _MessagesState extends State<Messages> {
       message.message = textMessage;
       message.urlImage = "";
       message.type = "texto";
+      message.date = Timestamp.now().toString();
 
       _saveMessage(_idLoggedUser, _idRecipientUser, message);
       _saveMessage(_idRecipientUser, _idLoggedUser, message);
@@ -122,6 +123,7 @@ class _MessagesState extends State<Messages> {
     message.message = "";
     message.urlImage = url;
     message.type = "imagem";
+    message.date = Timestamp.now().toString();
 
     _saveMessage(_idLoggedUser, _idRecipientUser, message);
     _saveMessage(_idRecipientUser, _idLoggedUser, message);
@@ -140,6 +142,7 @@ class _MessagesState extends State<Messages> {
     final stream = db.collection("mensagens")
         .document(_idLoggedUser)
         .collection(_idRecipientUser)
+        .orderBy("date", descending: false)
         .snapshots();
 
     stream.listen((data){
