@@ -197,9 +197,7 @@ class _MessagesState extends State<Messages> {
           case ConnectionState.done:
             QuerySnapshot querySnapshot = snapshot.data;
             if (snapshot.hasError) {
-              return Expanded(
-                child: Text("Erro ao carregar os dados."),
-              );
+              return Text("Erro ao carregar os dados.");
             } else {
               return Expanded(
                 child: ListView.builder(
